@@ -155,6 +155,20 @@ INSERT INTO Sale_Items (Sale_Item_ID, Sale_ID, Product_ID, Quantity, Unit_Price)
 (20, 10, 8, 4, 29.99);
 
 
+--SELECT STATEMENTS FOR INSERT TEST DATA--
+
 SELECT * FROM Branches,
 
 SELECT * FROM Cutsomer,
+
+SELECT * FROM Suppliers,
+
+SELECT * FROM Categories,
+
+SELECT * FROM Employees,
+
+SELECT * FROM Products,
+
+SELECT * FROM Sales,
+
+SELECT * FROM Sale_Items,
