@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Document</title>
+    <title>SQL data warehouse</title>
 </head>
 <body>
     <main>
@@ -11,13 +11,30 @@
 <h1>SQL data warehouse: </h1>
 <p class="sub">This is the database warehouse ,every result is produced by the live SQL database </p>
 
+<div class="tabs">
+<button id="tabs-reports" class="active"> Reports </button>
+<button id="tab-tables"> Browse Tables </button>
+</div>
 
+<section id="view-reports">  </section>
 
+<section id="view-tables" hidden> 
+    <div class="bar">
+    <select  id="table"  aria-label="Table"></select>
+       <input type="search"  id="search" placeholder="Search this table" > 
 
-    </main>
+    </div>
+<p class="error" id="tables-error" hidden></p>
+      <div id="tables-out"></div>
+      <div class="pager">
 
+  <button id="prev">Prev</button><button id="next">Next</button><span id="info"></span>
 
+     </div>
 
+  </section>
+
+</main>
 
 
 </body>
