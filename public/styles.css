@@ -1,0 +1,22 @@
+html{
+    scroll-behavior: smooth;
+}
+
+
+* {
+    box-sizing: border-box;
+    margin:0;
+    
+}
+
+
+--root {
+-bg: rgb(5, 0, 27);
+--surface: yellow;
+--line:white;
+--text:black;
+--muted:brown;
+--accent:green;
+
+}
+
