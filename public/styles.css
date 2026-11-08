@@ -9,14 +9,13 @@ html{
     
 }
 
-
---root {
--bg: rgb(5, 0, 27);
---surface: yellow;
---line:white;
---text:black;
---muted:brown;
---accent:green;
+:root {
+--bg: rgb(5, 5, 5);
+--surface: rgb(10, 10, 10);
+--line:rgb(44, 43, 43);
+--text:rgb(238, 238, 238);
+--muted:rgb(255, 0, 0);
+--accent:rgb(0, 0, 128);
 
 }
 
@@ -54,12 +53,13 @@ html{
     margin-bottom: 20px; 
     
     }
+
     button, select, input { 
      font: inherit; 
      color: var(--text); 
      background: var(--surface); 
-     border: 1px solid var(--line); 
-     border-radius: 10px;
+     border: 3px solid var(--line); 
+     border-radius: 8px;
      padding: 10px 14px;
 
          }
@@ -83,7 +83,7 @@ html{
          background: var(--accent); 
         border-color: var(--accent);
      }
-     
+
     .card {
     background: var(--surface);
     border: 1px solid var(--line); 
@@ -92,3 +92,107 @@ html{
     margin-bottom: 20px; 
 
 }
+
+
+
+ .card h2 { 
+   font-size: 18px;
+   margin-bottom: 4px;
+    }
+    .muted
+     {
+
+   color: var(--muted); 
+   font-size: 14px;
+   margin-bottom: 12px;
+
+         }
+
+    pre { 
+    background: #0d0f13; 
+    border: 1px solid var(--line);
+    border-radius: 10px;
+    padding: 14px; 
+    overflow-x: auto;
+    font: 13px/1.5 ui-monospace, Consolas, monospace; margin-bottom: 14px; 
+        }
+    .kw 
+    { 
+    color: #5aa9ff; 
+    font-weight: 600; 
+    }
+
+    .wrap
+     { 
+    overflow-x: auto; 
+    border: 1px solid var(--line); 
+    border-radius: 10px; 
+    }
+
+    table {
+     border-collapse: collapse;
+     width: 100%; font-size: 14px; 
+        }
+
+    th, td 
+    {
+    padding: 9px 14px;
+    text-align: left; 
+    white-space: nowrap; 
+    border-bottom: 1px solid var(--line); 
+        }
+
+    th { 
+    color: var(--muted);
+    font-weight: 600; 
+    background: #15181d; 
+        }
+
+    tr:last-child td 
+    { 
+
+    border-bottom: 0; 
+    }
+
+    .num
+     {
+    text-align: right; 
+    }
+
+    .bar 
+    { 
+
+    display: flex;
+    flex-wrap: wrap; 
+    gap: 10px; 
+    margin-bottom: 14px; 
+
+   }
+
+    .bar input 
+    {
+     flex: 1;
+     min-width: 180px; 
+
+  }
+
+    .pager 
+    { 
+
+    display: flex; flex-wrap: wrap; 
+    align-items: center; gap: 12px;
+    margin-top: 14px;
+    color: var(--muted); 
+    }
+
+    .error { 
+
+    color: #ff6b6b; 
+    font-size: 14px; 
+
+    }
+
+    [hidden] { 
+
+    display: none; 
+    }
