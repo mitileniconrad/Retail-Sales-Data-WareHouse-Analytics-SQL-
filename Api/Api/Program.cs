@@ -38,6 +38,10 @@ if (Directory.Exists(reportsDir))
     }
 }
 
+// Opening the plain address (localhost:5014) jumps to the list of reports
+
+app.MapGet("/", () => Results.Redirect("/api/reports"));
+
 // Lists every report with its SQL text
 
 app.MapGet("/api/reports", () => reports.Select(r => new
