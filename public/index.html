@@ -3,44 +3,136 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Retail warehouse dashboard</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="styles.css">
-    <title>SQL data warehouse</title>
 </head>
 <body>
-<main>
+<div class="app">
 
-<h1>SQL Retail Small Business Data Warehouse: </h1>
-<p class="sub">This is the database warehouse , every result is produced by the live SQL database </p>
+    <!-- Sidebar -->
+    <aside class="side">
+        <div class="brand">
+            <span class="brand-name">Retail<br>Warehouse</span>
+        </div>
 
-<div class="tabs">
-<button id="tab-reports" class="active"> Reports </button>
-<button id="tab-tables"> Browse Tables </button>
+        <nav class="nav" aria-label="Main">
+            <button id="tab-overview" data-view="overview" class="active">Overview</button>
+            <button id="tab-reports" data-view="reports">SQL reports</button>
+            <button id="tab-tables" data-view="tables">Browse tables</button>
+        </nav>
+
+        <p class="api-status" id="api-status" role="status"><span class="dot"></span><span id="api-status-text">Connecting</span></p>
+    </aside>
+
+    <main class="main">
+        <header class="top">
+            <div>
+                <h1 id="page-title">Sales overview</h1>
+                <p class="sub" id="page-sub">Every figure on this page is read live from the SQL data warehouse.</p>
+            </div>
+            <button id="refresh" class="ghost">Refresh data</button>
+        </header>
+
+        <!-- === Overview === -->
+        <section id="view-overview" class="view">
+            <div class="layout">
+                <div class="col-main">
+
+                    <div class="kpis">
+                        <article class="kpi amber">
+                            <p class="kpi-label">Total revenue</p>
+                            <p class="kpi-value" id="k-revenue">...</p>
+                            <p class="kpi-note" id="k-revenue-note">&nbsp;</p>
+                        </article>
+                        <article class="kpi violet">
+                            <p class="kpi-label">Total profit</p>
+                            <p class="kpi-value" id="k-profit">...</p>
+                            <p class="kpi-note" id="k-profit-note">&nbsp;</p>
+                        </article>
+                        <article class="kpi lime">
+                            <p class="kpi-label">Sales made</p>
+                            <p class="kpi-value" id="k-sales">...</p>
+                            <p class="kpi-note" id="k-sales-note">&nbsp;</p>
+                        </article>
+                        <article class="kpi coral">
+                            <p class="kpi-label">Customers</p>
+                            <p class="kpi-value" id="k-customers">...</p>
+                            <p class="kpi-note" id="k-customers-note">&nbsp;</p>
+                        </article>
+                    </div>
+
+                    <section class="panel">
+                        <div class="panel-head">
+                            <div>
+                                <h2>Revenue by month</h2>
+                                <p class="panel-sub" id="trend-sub">&nbsp;</p>
+                            </div>
+                            <div class="seg" role="group" aria-label="Chart view">
+                                <button id="seg-monthly" class="active" aria-pressed="true">Monthly</button>
+                                <button id="seg-running" aria-pressed="false">Running total</button>
+                            </div>
+                        </div>
+                        <div id="trend" class="chart"></div>
+                    </section>
+
+                    <div class="two">
+                        <section class="panel">
+                            <h2>Revenue by branch</h2>
+                            <p class="panel-sub">Bar length is revenue. The percentage is profit margin.</p>
+                            <div id="branches"></div>
+                        </section>
+                        <section class="panel">
+                            <h2>Most profitable product per category</h2>
+                            <p class="panel-sub">Ranked by profit, not units sold.</p>
+                            <div id="categories"></div>
+                        </section>
+                    </div>
+                </div>
+
+                <aside class="col-side">
+                    <section class="panel">
+                        <h2>Top customers</h2>
+                        <p class="panel-sub">By total spent</p>
+                        <ol class="list" id="customers"></ol>
+                    </section>
+                    <section class="panel">
+                        <h2>Best seller in each branch</h2>
+                        <p class="panel-sub">Employee with the highest revenue</p>
+                        <ol class="list" id="staff"></ol>
+                    </section>
+                    <section class="panel">
+                        <h2>Customers who have not bought</h2>
+                        <p class="panel-sub">Oldest sign-ups first</p>
+                        <ol class="list" id="inactive"></ol>
+                    </section>
+                </aside>
+            </div>
+        </section>
+
+        <!-- === SQL reports === -->
+        <section id="view-reports" class="view" hidden></section>
+
+        <!-- === Browse tables === -->
+        <section id="view-tables" class="view" hidden>
+            <div class="panel">
+                <div class="bar">
+                    <select id="table" aria-label="Table"></select>
+                    <input type="search" id="search" placeholder="Search this table" aria-label="Search this table">
+                </div>
+                <p class="error" id="tables-error" hidden></p>
+                <div id="tables-out"></div>
+                <div class="pager">
+                    <button id="prev">Previous</button><button id="next">Next</button><span id="info"></span>
+                </div>
+            </div>
+        </section>
+    </main>
 </div>
-
-<section id="view-reports">  </section>
-
-<section id="view-tables" hidden> 
-    <div class="bar">
-    <select  id="table"  aria-label="Table"></select>
-       <input type="search"  id="search" placeholder="Search this table" > 
-
-    </div>
-<p class="error" id="tables-error" hidden></p>
-      <div id="tables-out"></div>
-      <div class="pager">
-
-  <button id="prev">Prev</button><button id="next">Next</button><span id="info"></span>
-
-     </div>
-
-  </section>
-
-</main>
 
 <script src="Config.js"></script>
 <script src="script.js"></script>
-
-
-
 </body>
 </html>
