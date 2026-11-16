@@ -14,6 +14,21 @@ builder.Services.AddCors(o => o.AddDefaultPolicy(p => p.WithOrigins(origins).Wit
 var app = builder.Build();
 app.UseCors();
 
+// Development only: send the real error text back so the page can show why a query failed
+if (app.Environment.IsDevelopment())
+{
+    app.Use(async (ctx, next) =>
+    {
+        try { await next(); }
+        catch (Exception ex)
+        {
+            ctx.Response.StatusCode = 500;
+            ctx.Response.ContentType = "text/plain";
+            await ctx.Response.WriteAsync(ex.GetType().Name + ": " + ex.Message);
+        }
+    });
+}
+
 var connStr = app.Configuration.GetConnectionString("Default")!;
 
 // Only these tables can be browsed (Branches, Customer, Suppliers, Categories, Employees, Products, Sales and Sale_Items)
@@ -22,7 +37,7 @@ string[] tables = { "Branches", "Customer", "Suppliers", "Categories",
                     "Employees", "Products", "Sales", "Sale_Items" };
 
 
-// Reports IS the .sql files in the file /Reports. The first comment lines hold the title and description.
+// Reports IS the .sql files in the file /Reports. The title comes from the file name.
 var reports = new Dictionary<string, Report>();
 var reportsDir = Path.Combine(AppContext.BaseDirectory, "Reports");
 if (Directory.Exists(reportsDir))
@@ -30,11 +45,13 @@ if (Directory.Exists(reportsDir))
     foreach (var file in Directory.GetFiles(reportsDir, "*.sql").OrderBy(f => f))
     {
         var sql = File.ReadAllText(file);
+        var name = Path.GetFileNameWithoutExtension(file);
 
-        // Reads the text after "-- Title:" or "-- Description:"
-        string Meta(string key) => sql.Split('\n')
-            .FirstOrDefault(l => l.StartsWith($"-- {key}:"))?.Substring(key.Length + 4).Trim() ?? "";
-        reports[Path.GetFileNameWithoutExtension(file)] = new Report(Meta("Title"), Meta("Description"), sql.Trim());
+        // 01-revenue-by-branch becomes "Revenue by branch"
+        var title = name.Substring(name.IndexOf('-') + 1).Replace('-', ' ');
+        title = char.ToUpper(title[0]) + title.Substring(1);
+
+        reports[name] = new Report(title, "", sql.Trim());
     }
 }
 

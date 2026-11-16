@@ -196,3 +196,13 @@ html{
 
     display: none; 
     }
+
+    .sql-toggle {
+    margin-top: 14px;
+    padding: 6px 12px;
+    font-size: 13px;
+    border-width: 2px;
+    color: var(--muted);
+    }
+
+    .card pre { margin-top: 12px; }
