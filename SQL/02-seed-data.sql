@@ -1,11 +1,13 @@
 -- Starter rows for every table (10 sales, 20 sale items).
 
-USE Data_Warehouse;
 
 INSERT INTO Branches (Branch_ID, Branch_Name, Location) VALUES
 (1, 'Johannesburg Central', 'Johannesburg'),
 (2, 'Cape Town Waterfront', 'Cape Town'),
-(3, 'Durban North', 'Durban');
+(3, 'Durban North', 'Durban'),
+(4, 'Johannesburg North', 'Johannesburg');
+
+
 
 INSERT INTO Customer (Customer_ID, First_Name, Last_Name, Email, City, Joined_Date) VALUES
 
@@ -17,6 +19,13 @@ INSERT INTO Customer (Customer_ID, First_Name, Last_Name, Email, City, Joined_Da
 (6, 'Naledi', 'Khumalo', 'naledi.khumalo@email.com', 'Johannesburg', '2024-06-17'),
 (7, 'Pieter', 'Botha', 'pieter.botha@email.com', 'Durban', '2024-07-25'),
 (8, 'Zanele', 'Ndlovu', 'zanele.ndlovu@email.com', 'Pretoria', '2024-08-30');
+
+
+INSERT INTO Customer (Customer_ID, First_Name, Last_Name, Email, City, Joined_Date) VALUES
+(211, 'Zanele', 'Sithole', 'zanele.sithole@example.com', 'East London', '2025-09-14'),
+(212, 'Francois', 'du Plessis', 'francois.duplessis@example.com', 'Kimberley', '2025-10-02'),
+(213, 'Lerato', 'Molefe', 'lerato.molefe@example.com', 'Rustenburg', '2025-11-19');
+
 
 INSERT INTO Suppliers (Supplier_ID, Supplier_name, Supplier_Email) VALUES
 

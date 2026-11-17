@@ -21,6 +21,7 @@
         <nav class="nav" aria-label="Main">
             <button id="tab-overview" data-view="overview" class="active">Overview</button>
             <button id="tab-reports" data-view="reports">SQL reports</button>
+            <button id="tab-explore" data-view="explore">People &amp; data</button>
             <button id="tab-tables" data-view="tables">Browse tables</button>
         </nav>
 
@@ -115,6 +116,26 @@
         <!-- === SQL reports === -->
         <section id="view-reports" class="view" hidden></section>
 
+        <!-- === People & data === -->
+        <section id="view-explore" class="view" hidden>
+            <div class="panel">
+                <div class="pills" id="ex-pills" role="group" aria-label="Data type"></div>
+                <div class="bar">
+                    <input type="search" id="ex-search" placeholder="Search by name, city, job title..." aria-label="Search">
+                    <div class="seg" role="group" aria-label="Layout">
+                        <button id="ex-cards" class="active">Cards</button>
+                        <button id="ex-list">Table</button>
+                    </div>
+                    <button id="ex-export" class="ghost">Export CSV</button>
+                </div>
+                <p class="error" id="ex-error" hidden></p>
+                <div id="ex-out"></div>
+                <div class="pager">
+                    <button id="ex-prev">Previous</button><button id="ex-next">Next</button><span id="ex-info"></span>
+                </div>
+            </div>
+        </section>
+
         <!-- === Browse tables === -->
         <section id="view-tables" class="view" hidden>
             <div class="panel">
@@ -131,6 +152,16 @@
         </section>
     </main>
 </div>
+
+<!-- Record detail popup for People & data -->
+<dialog id="ex-detail">
+    <div class="detail-head">
+        <span class="avatar big" id="d-avatar"></span>
+        <div><h2 id="d-title"></h2><p class="muted" id="d-sub"></p></div>
+        <button id="d-close" class="ghost" aria-label="Close">Close</button>
+    </div>
+    <dl class="detail-grid" id="d-body"></dl>
+</dialog>
 
 <script src="Config.js"></script>
 <script src="script.js"></script>

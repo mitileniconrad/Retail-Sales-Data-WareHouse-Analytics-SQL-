@@ -1,8 +1,4 @@
--- Creates the Data_Warehouse database and its 8 tables.
-
-CREATE DATABASE Data_Warehouse;
-
-USE Data_Warehouse;
+--Create tables for all the necessarry tables 
 
 CREATE TABLE Branches (
     Branch_ID    INT PRIMARY KEY,

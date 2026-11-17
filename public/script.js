@@ -1,7 +1,7 @@
 const $ = id => document.getElementById(id);
 
-//  API
-const cache = {};                                   // each report runs once per page load
+//  API logic
+const cache = {};   // each report runs once per page load
 async function api(path) {
   const res = await fetch(window.API_BASE + path);
   if (!res.ok) throw new Error(res.status + " - " + (await res.text()).slice(0, 400));
@@ -102,7 +102,7 @@ function listItem(index, name, meta, value) {
 // KPI cards
 function setKpi(id, value, text) {
   $(id).textContent = value;
-  $(id + "-note").textContent = text || " ";
+  $(id + "-note").textContent = text || " ";
 }
 
 function loadKpis() {
@@ -139,7 +139,8 @@ function niceMax(v) {
   if (v <= 0) return 1;
   const p = Math.pow(10, Math.floor(Math.log10(v)));
   const n = v / p;
-  return (n <= 1 ? 1 : n <= 2 ? 2 : n <= 5 ? 5 : 10) * p;   // five even steps: 1, 2, 5 or 10 times a power of ten
+  const steps = [1, 1.5, 2, 2.5, 3, 4, 5, 6, 8, 10];        // finer steps so the chart is not left half empty (e.g. R2.9M used to get a R5M axis)
+  return steps.find(x => n <= x) * p;
 }
 
 function drawTrend(animate) {
@@ -187,6 +188,8 @@ function drawTrend(animate) {
     const mx = (x(i - 1) + x(i)) / 2;
     d += ` C${mx},${y(rows[i - 1][key])} ${mx},${y(rows[i][key])} ${x(i)},${y(rows[i][key])}`;
   }
+
+  
   svg.append(svgEl("path", { class: "area", d: `${d} L${x(rows.length - 1)},${y(0)} L${x(0)},${y(0)} Z` }),
              svgEl("path", { class: "line", d, pathLength: 1 }));
 
@@ -220,6 +223,8 @@ function drawTrend(animate) {
   host.replaceChildren(svg, tip);
 }
 
+//Load function for the best trending items by revenue
+
 function loadTrend() {
   const host = $("trend");
   return report(R.trend).then(d => {
@@ -239,6 +244,8 @@ function loadTrend() {
   });
 }
 
+
+
 function setTrendMode(key) {
   trend.mode = key;
   $("seg-monthly").classList.toggle("active", key === "Revenue");
@@ -250,11 +257,13 @@ function setTrendMode(key) {
 $("seg-monthly").addEventListener("click", () => setTrendMode("Revenue"));
 $("seg-running").addEventListener("click", () => setTrendMode("Running_Total"));
 
+
 let resizeTimer;
 window.addEventListener("resize", () => {
   clearTimeout(resizeTimer);
   resizeTimer = setTimeout(() => drawTrend(false), 120);
 });
+
 
 // ---- Branch bars
 function renderBranches(rows, box) {
@@ -275,6 +284,7 @@ function renderBranches(rows, box) {
 }
 
 // ---- Best product per category
+
 function renderCategories(rows, box) {
   const wrap = el("div", "rows");
   rows.filter(r => r.Rank_In_Category === 1).forEach(r => {
@@ -369,6 +379,7 @@ function tableEl(columns, rows) {
 }
 
 async function loadReports() {
+
   const box = $("view-reports");
   try {
     const list = await api("/api/reports");
@@ -376,7 +387,7 @@ async function loadReports() {
       const card = el("section", "card");
       const out = el("div", "", "Running query...");
       const code = codeBlock(r.sql);
-      code.hidden = true;                  // SQL stays hidden until the user asks for it
+      code.hidden = true;  // SQL stays hidden until the user asks for it by clicking the view button
       const toggle = el("button", "sql-toggle", "View SQL");
       toggle.addEventListener("click", () => {
         code.hidden = !code.hidden;
@@ -412,6 +423,7 @@ async function loadTable() {
   }
 }
 
+
 async function openTables() {
   try {
     const names = await api("/api/tables");
@@ -423,6 +435,9 @@ async function openTables() {
   }
 }
 
+
+
+
 $("table").addEventListener("change", e => { state.table = e.target.value; state.page = 1; loadTable(); });
 $("prev").addEventListener("click", () => { state.page--; loadTable(); });
 $("next").addEventListener("click", () => { state.page++; loadTable(); });
@@ -432,10 +447,178 @@ $("search").addEventListener("input", e => {
   searchTimer = setTimeout(() => { state.search = e.target.value; state.page = 1; loadTable(); }, 300);
 });
 
+
+// ---------------------------------------------------------------- People & data (friendly explorer)
+const ex = { tables: [], table: null, page: 1, search: "", view: "cards",
+             columns: [], rows: [], total: 0, pageSize: 24, sortCol: null, sortDir: 1 };
+
+const prettify = c => c.replace(/_/g, " ").replace(/([a-z])([A-Z])/g, "$1 $2").replace(/\b\w/g, m => m.toUpperCase());
+const isId = c => /(^|_)id$/i.test(c);
+const plural = n => prettify(n) + (/s$/i.test(n) ? "" : "s");
+
+// Card title and subtitle are guessed from common column names. Edit these lists to match your tables.
+function pickTitle(o) {
+  for (const k of ["Full_Name", "Name", "Product_Name", "Branch_Name", "Category_name", "Category_Name"])
+    if (o[k]) return String(o[k]);
+  if (o.First_Name || o.Last_Name) return [o.First_Name, o.Last_Name].filter(Boolean).join(" ");
+  const k = Object.keys(o).find(c => !isId(c) && typeof o[c] === "string" && o[c]);
+  return k ? o[k] : "Record";
+}
+function pickSub(o) {
+  for (const k of ["Job_Title", "Email", "City", "Category_name", "Branch_Name"])
+    if (o[k]) return String(o[k]);
+  return "";
+}
+
+function cellText(v, col) {
+  if (v === null || v === undefined || v === "") return "-";
+  if (typeof v === "number" && /Price|Amount|Revenue|Profit|Spent|Salary|Cost|Total/.test(col)) return money(v);
+  if (typeof v === "string" && /^\d{4}-\d{2}-\d{2}/.test(v)) return v.slice(0, 10);
+  return String(v);
+}
+
+function renderCards(objs) {
+  const wrap = el("div", "cards");
+  objs.forEach((o, i) => {
+    const title = pickTitle(o), sub = pickSub(o);
+    const card = el("button", "pcard");
+    const av = el("span", "avatar", initials(title) || "?");
+    av.style.background = COLORS[i % COLORS.length];
+    const mid = el("div"); mid.append(el("div", "t", title), el("div", "s", sub));
+    const top = el("div", "pcard-top"); top.append(av, mid);
+    const chips = el("div", "chips");
+    Object.keys(o).filter(c => !isId(c) && o[c] !== null && o[c] !== "" && String(o[c]) !== title && String(o[c]) !== sub)
+      .slice(0, 3).forEach(c => {
+        const ch = el("span", "chip"); ch.append(el("span", "", prettify(c) + ":"), el("b", "", cellText(o[c], c)));
+        chips.append(ch);
+      });
+    card.append(top, chips);
+    card.addEventListener("click", () => openDetail(o, i));
+    wrap.append(card);
+  });
+  return wrap;
+}
+
+function renderList(objs) {
+  const cols = ex.columns.filter(c => !isId(c));
+  const table = el("table"), tr = el("tr");
+  cols.forEach(c => {
+    const th = el("th", "sortable", prettify(c) + (ex.sortCol === c ? (ex.sortDir > 0 ? " ▲" : " ▼") : ""));
+    th.addEventListener("click", () => {
+      ex.sortDir = ex.sortCol === c ? -ex.sortDir : 1; ex.sortCol = c; drawExplore();
+    });
+    tr.append(th);
+  });
+  const thead = el("thead"); thead.append(tr);
+  const tbody = el("tbody");
+  objs.forEach((o, i) => {
+    const row = el("tr");
+    cols.forEach(c => row.append(el("td", typeof o[c] === "number" ? "num" : "", cellText(o[c], c))));
+    row.addEventListener("click", () => openDetail(o, i));
+    tbody.append(row);
+  });
+  table.append(thead, tbody);
+  const w = el("div", "wrap"); w.append(table);
+  return w;
+}
+
+function drawExplore() {
+  const objs = ex.rows.map(r => Object.fromEntries(ex.columns.map((c, i) => [c, r[i]])));
+  if (ex.sortCol) objs.sort((a, b) => {
+    const x = a[ex.sortCol], y = b[ex.sortCol];
+    return (typeof x === "number" && typeof y === "number" ? x - y : String(x ?? "").localeCompare(String(y ?? ""))) * ex.sortDir;
+  });
+  $("ex-out").replaceChildren(objs.length
+    ? (ex.view === "cards" ? renderCards(objs) : renderList(objs))
+    : el("p", "empty", "Nothing found. Try a different search."));
+  const pages = Math.max(1, Math.ceil(ex.total / ex.pageSize));
+  $("ex-info").textContent = ex.total.toLocaleString() + " records, page " + ex.page + " of " + pages;
+  $("ex-prev").disabled = ex.page <= 1;
+  $("ex-next").disabled = ex.page >= pages;
+}
+
+async function loadExplore() {
+  try {
+    const q = new URLSearchParams({ page: ex.page, pageSize: ex.pageSize, search: ex.search });
+    const d = await api("/api/tables/" + ex.table + "?" + q);
+    ex.columns = d.columns; ex.rows = d.rows; ex.total = d.total; ex.pageSize = d.pageSize || ex.pageSize;
+    $("ex-error").hidden = true;
+    drawExplore();
+  } catch (err) {
+    $("ex-error").textContent = "Could not load data (" + err.message + ").";
+    $("ex-error").hidden = false;
+  }
+}
+
+function drawPills() {
+  $("ex-pills").replaceChildren(...ex.tables.map(n => {
+    const b = el("button", n === ex.table ? "active" : "", plural(n));
+    b.addEventListener("click", () => {
+      ex.table = n; ex.page = 1; ex.search = ""; ex.sortCol = null; $("ex-search").value = "";
+      drawPills(); loadExplore();
+    });
+    return b;
+  }));
+}
+
+async function openExplore() {
+  try {
+    ex.tables = await api("/api/tables");
+    ex.table = ex.tables.find(n => /employee|staff/i.test(n)) || ex.tables[0];
+    drawPills(); loadExplore();
+  } catch (err) {
+    $("ex-error").textContent = "Could not reach the API (" + err.message + ").";
+    $("ex-error").hidden = false;
+  }
+}
+
+function openDetail(o, i) {
+  const title = pickTitle(o);
+  const av = $("d-avatar");
+  av.textContent = initials(title) || "?";
+  av.style.background = COLORS[i % COLORS.length];
+  $("d-title").textContent = title;
+  $("d-sub").textContent = pickSub(o);
+  $("d-body").replaceChildren(...Object.keys(o).flatMap(c => [el("dt", "", prettify(c)), el("dd", "", cellText(o[c], c))]));
+  $("ex-detail").showModal();
+}
+
+function setLayout(v) {
+  ex.view = v;
+  $("ex-cards").classList.toggle("active", v === "cards");
+  $("ex-list").classList.toggle("active", v === "list");
+  if (ex.rows.length) drawExplore();
+}
+
+function exportCsv() {
+  const esc = v => '"' + String(v ?? "").replace(/"/g, '""') + '"';
+  const csv = [ex.columns.map(prettify), ...ex.rows].map(r => r.map(esc).join(",")).join("\n");
+  const a = el("a");
+  a.href = URL.createObjectURL(new Blob([csv], { type: "text/csv" }));
+  a.download = ex.table + ".csv";
+  a.click();
+  URL.revokeObjectURL(a.href);
+}
+
+$("ex-cards").addEventListener("click", () => setLayout("cards"));
+$("ex-list").addEventListener("click", () => setLayout("list"));
+$("ex-export").addEventListener("click", exportCsv);
+$("ex-prev").addEventListener("click", () => { ex.page--; loadExplore(); });
+$("ex-next").addEventListener("click", () => { ex.page++; loadExplore(); });
+$("d-close").addEventListener("click", () => $("ex-detail").close());
+$("ex-detail").addEventListener("click", e => { if (e.target.id === "ex-detail") e.target.close(); });
+let exTimer;
+$("ex-search").addEventListener("input", e => {
+  clearTimeout(exTimer);
+  exTimer = setTimeout(() => { ex.search = e.target.value; ex.page = 1; loadExplore(); }, 300);
+});
+
+
 //Navigation
 const VIEWS = {
   overview: { title: "Sales overview", sub: "Every figure on this page is read live from the SQL data warehouse.", load: loadOverview },
   reports:  { title: "SQL reports", sub: "The queries behind the dashboard. Select View SQL to read one.", load: loadReports },
+  explore:  { title: "People & data", sub: "Browse employees, customers and products as easy-to-read cards.", load: openExplore },
   tables:   { title: "Browse tables", sub: "Search and page through the raw warehouse tables.", load: openTables },
 };
 
@@ -450,9 +633,7 @@ function showView(name) {
     $("view-" + v).hidden = v !== name;
     $("tab-" + v).classList.toggle("active", v === name);
 
-    if 
-    
-    (v === name) $("tab-" + v).setAttribute("aria-current", "page");
+    if (v === name) $("tab-" + v).setAttribute("aria-current", "page");
     else $("tab-" + v).removeAttribute("aria-current");
   }
 
@@ -460,12 +641,9 @@ function showView(name) {
   $("page-title").textContent = VIEWS[name].title;
   $("page-sub").textContent = VIEWS[name].sub;
   history.replaceState(null, "", "#" + name);
-  if
-   (!loaded[name]) { loaded[name] = true; VIEWS[name].load();
+  if (!loaded[name]) { loaded[name] = true; VIEWS[name].load(); }
 
-    }
-  if
-   (name === "overview") drawTrend(false);        // the chart needs a visible box to measure
+  if (name === "overview") drawTrend(false);        // the chart needs a visible box to measure
 }
 
 for (const v in VIEWS) $("tab-" + v).addEventListener("click", () => showView(v));
