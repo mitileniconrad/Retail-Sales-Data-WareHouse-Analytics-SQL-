@@ -7,11 +7,11 @@
   --text: #f3f2ee;
   --muted: #9b9aa3;
 
-  --amber: #46f385;   /* green */
-  --violet: #81b0fd;  /* blue  */
-  --lime: #10db50;    /* teal  */
-  --coral: #ef4444;   /* red   */
-  --on-color: #ffffff;          /* text on the KPI cards */
+  --amber: #f6b94f;
+  --violet: #a98cf2;
+  --lime: #c8e88a;
+  --coral: #ff8f7d;
+  --on-color: #151517;          /* text on the pastel cards */
   --chart: #22c55e;   /* graph colour: change to #ef4444 for red */
 
   --radius: 16px;
